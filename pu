@@ -1,0 +1,101 @@
+#!/usr/bin/env python3
+
+from argparse import ArgumentParser
+from math import sqrt
+from random import randint
+from time import sleep
+
+def mdf(pot, bet):
+    return pot / (pot + bet)
+
+def run_mdf_command(pot, bet, freq=None):
+    if freq is not None:
+        freq = freq / 100.0
+    mdf_value = mdf(pot, bet)
+    print(f'{mdf_value * 100:.1f}')
+    if freq is not None and freq < mdf_value:
+        freq_delta = mdf_value - freq
+        mistake_size = freq_delta * pot
+        print(f'Under-defending by {freq_delta * 100:.1f}%')
+        print(f'Mistake of {mistake_size:.2f} chips')
+        return mdf_value * freq
+    return mdf_value
+
+def geo_upswing(p, s, b):
+    return 0.5 * (((p + 2 * s) / p) ** (1 / b) - 1)
+
+def run_geo_command(pot, stack, streets, verbose=False):
+    e = geo_upswing(pot, stack, streets)
+    if verbose:
+        p = pot
+        s = stack
+        print(f"Pot {p:.2f}, Stack {s:.2f}")
+        for i in range(streets):
+            b = e * p
+            p += 2 * b
+            s -= b
+            print(f"Bet {b:.2f}, Pot {p:.2f}, Stack {s:.2f}")
+    print(e)
+
+def run_rng_command(min, max):
+    print(randint(min, max))
+
+def run_rngs_command(min, max, secs, num_colors):
+    colors = ['\033[97m', '\033[91m', '\033[92m', '\033[93m', '\033[94m', '\033[95m', '\033[96m']
+    if num_colors > len(colors):
+        num_colors = len(colors)
+    if num_colors < 1:
+        num_colors = 1
+    c = 0
+    while True:
+        color = colors[c]
+        print(f"\n{color}{randint(min, max)}\033[0m", end='')
+        sleep(secs)
+        c = (c + 1) % num_colors
+
+def main():
+    cli_parser = ArgumentParser()
+    sub_parsers = cli_parser.add_subparsers(dest='command', required=True)
+    mdf_parser = sub_parsers.add_parser('mdf', help='Print MDF')
+    mdf_parser.add_argument('pot', type=float)
+    mdf_parser.add_argument('bet', type=float)
+    mdf_parser.add_argument('--freq', type=float, default=None, help='Actual defence frequency')
+
+    geo2_parser = sub_parsers.add_parser('geo2', help='Print 2-street geometric betsize')
+    geo2_parser.add_argument('pot', type=float)
+    geo2_parser.add_argument('stack', type=float)
+    geo2_parser.add_argument('--verbose', '-v', action='store_true')
+
+    geo3_parser = sub_parsers.add_parser('geo3', help='Print 3-street geometric betsize')
+    geo3_parser.add_argument('pot', type=float)
+    geo3_parser.add_argument('stack', type=float)
+    geo3_parser.add_argument('--verbose', '-v', action='store_true')
+
+    rng_parser = sub_parsers.add_parser('rng', help='Random number generator')
+    rng_parser.add_argument('--min', '-m', type=int, default=1)
+    rng_parser.add_argument('--max', '-M', type=int, default=100)
+
+    rngs_parser = sub_parsers.add_parser('rngs', help='Random number generator')
+    rngs_parser.add_argument('--min', '-m', type=int, default=1)
+    rngs_parser.add_argument('--max', '-M', type=int, default=100)
+    rngs_parser.add_argument('--times', '-t', type=int, default=3, help='Seconds to sleep between random number')
+    rngs_parser.add_argument('--colors', '-c', type=int, default=3, help='Number of colors to use for random numbers')
+
+    args = cli_parser.parse_args()
+    command = args.command
+    if command == 'mdf':
+        run_mdf_command(args.pot, args.bet, args.freq)
+    elif command == 'geo2':
+        run_geo_command(args.pot, args.stack, 2, args.verbose)
+    elif command == 'geo3':
+        run_geo_command(args.pot, args.stack, 3, args.verbose)
+    elif command == 'rng':
+        run_rng_command(args.min, args.max)
+    elif command == 'rngs':
+        run_rngs_command(args.min, args.max, args.times, args.colors)
+    else:
+        print('Unknown command:', command)
+
+
+if __name__ == '__main__':
+    main()
