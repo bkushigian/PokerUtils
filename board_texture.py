@@ -29,7 +29,7 @@ def ranks(cards):
 
 def suits(cards):
     """Get set of suits contained on board"""
-    return set(s for (s, _) in cards)
+    return set(s for (_, s) in cards)
 
 
 def is_flop(cards):

@@ -1,0 +1,7 @@
+title = "Test Flop Categorization"
+
+[flop-categories]
+three_of_a_kind = "THREE_OF_A_KIND"
+monotone = "MONOTONE"
+unpaired = "UNPAIRED"
+paired = "PAIRED"
