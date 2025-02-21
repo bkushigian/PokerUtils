@@ -4,6 +4,7 @@ from argparse import ArgumentParser
 from math import sqrt
 from random import randint
 from time import sleep
+import pyfiglet
 
 def mdf(pot, bet):
     return pot / (pot + bet)
@@ -40,18 +41,57 @@ def run_geo_command(pot, stack, streets, verbose=False):
 def run_rng_command(min, max):
     print(randint(min, max))
 
-def run_rngs_command(min, max, secs, num_colors):
-    colors = ['\033[97m', '\033[91m', '\033[92m', '\033[93m', '\033[94m', '\033[95m', '\033[96m']
+def run_rngs_command(min, max, secs, num_colors, on_mouse=False, font=None, save_history=False):
+    colors = ['\033[97m', '\033[91m', '\033[93m', '\033[32m', '\033[96m', '\033[94m',  '\033[95m']
     if num_colors > len(colors):
         num_colors = len(colors)
     if num_colors < 1:
         num_colors = 1
     c = 0
-    while True:
+    if font is None:
+        font = "doh"
+    if on_mouse:
         color = colors[c]
         print(f"\n{color}{randint(min, max)}\033[0m", end='')
-        sleep(secs)
         c = (c + 1) % num_colors
+        def on_click(x, y, button, pressed):
+            print("Click detected")
+            if pressed:
+                color = colors[c]
+                print(f"\n{color}\033[1m{randint(min, max)}\033[0m", end='')
+                c = (c + 1) % num_colors
+            return True
+        try:
+            with mouse.Listener(on_click=on_click) as listener:
+                print("listening")
+                listener.join()
+        except Exception as e:
+            print(f"Error: {e}")
+    else:
+        last_num_lines = 0
+        try:
+            while True:
+                num = randint(min, max)
+                c = int(num_colors * (num-1) / max) + 1
+                color = colors[c]
+
+                if font is None:
+                    figged = pyfiglet.figlet_format(f"{num:02}")
+                else:
+                    figged = pyfiglet.figlet_format(f"{num:02}", font=font)
+                figged = figged.rstrip().lstrip('\n')
+                if last_num_lines and not save_history:
+                    for i in range(last_num_lines):
+                        print("\r                                                       ", end='')
+                        print("\033[1A", end='')
+                msg = f"\n\n\n\n{color}{figged}\033[0m"
+                last_num_lines = msg.count('\n')
+
+                print(msg, end='')
+                sleep(secs)
+                c = (c + 1) % num_colors
+        except KeyboardInterrupt as e:
+            return
 
 def main():
     cli_parser = ArgumentParser()
@@ -79,7 +119,9 @@ def main():
     rngs_parser.add_argument('--min', '-m', type=int, default=1)
     rngs_parser.add_argument('--max', '-M', type=int, default=100)
     rngs_parser.add_argument('--times', '-t', type=int, default=3, help='Seconds to sleep between random number')
-    rngs_parser.add_argument('--colors', '-c', type=int, default=3, help='Number of colors to use for random numbers')
+    rngs_parser.add_argument('--colors', '-c', type=int, default=5, help='Number of colors to use for random numbers')
+    rngs_parser.add_argument('--on_mouse', action='store_true', help='Update RNG on mouse click')
+    rngs_parser.add_argument('--font', default=None)
 
     args = cli_parser.parse_args()
     command = args.command
@@ -92,7 +134,7 @@ def main():
     elif command == 'rng':
         run_rng_command(args.min, args.max)
     elif command == 'rngs':
-        run_rngs_command(args.min, args.max, args.times, args.colors)
+        run_rngs_command(args.min, args.max, args.times, args.colors, args.on_mouse, font=args.font)
     else:
         print('Unknown command:', command)
 
