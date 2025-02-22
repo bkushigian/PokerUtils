@@ -40,7 +40,7 @@ def run_geo_command(pot, stack, streets, verbose=False):
             p += 2 * b
             s -= b
             print(f"Bet {b:.2f}, Pot {p:.2f}, Stack {s:.2f}")
-    print(e)
+    print(e, e * pot)
 
 
 def run_rng_command(min, max):
@@ -165,9 +165,9 @@ def main():
     command = args.command
     if command == "mdf":
         run_mdf_command(args.pot, args.bet, args.freq)
-    elif command == "geo2":
+    elif command == "e2":
         run_geo_command(args.pot, args.stack, 2, args.verbose)
-    elif command == "geo3":
+    elif command == "e3":
         run_geo_command(args.pot, args.stack, 3, args.verbose)
     elif command == "rng":
         run_rng_command(args.min, args.max)
