@@ -34,7 +34,7 @@ def rngs_cmd(
             color_idx = int(num_colors * (num - min_val) / (max_val - min_val))
             style = COLORS[color_idx]
             
-            fig_text = pyfiglet.figlet_format(f"{num:02}", font=font).strip()
+            fig_text = pyfiglet.figlet_format(f"{num:02}", font=font).rstrip()
             
             if not history:
                 console.clear()
