@@ -1,28 +1,13 @@
-from argparse import ArgumentParser
 from random import randint
-from .base import Command, CommandResult
+import typer
+from rich.console import Console
 
+console = Console()
 
-class RngCommand(Command):
-    name = "rng"
-    help = "Generate random numbers"
-
-    @classmethod
-    def add_arguments(cls, parser: ArgumentParser) -> None:
-        parser.add_argument(
-            "--min", "-m",
-            type=int,
-            default=1,
-            help="Minimum value (default: 1)"
-        )
-        parser.add_argument(
-            "--max", "-M",
-            type=int,
-            default=100,
-            help="Maximum value (default: 100)"
-        )
-
-    @classmethod
-    def execute(cls, args) -> CommandResult:
-        number = randint(args.min, args.max)
-        return CommandResult(message=str(number)) 
+def rng_cmd(
+    min_val: int = typer.Option(1, "--min", "-m", help="Minimum value"),
+    max_val: int = typer.Option(100, "--max", "-M", help="Maximum value"),
+) -> None:
+    """Generate a random number."""
+    number = randint(min_val, max_val)
+    console.print(number, style="bold green") 

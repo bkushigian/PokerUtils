@@ -12,7 +12,8 @@ authors = [
 ]
 dependencies = [
     "pyfiglet>=0.8.post1",
-    "mouse>=0.7.1"
+    "rich>=13.0.0",
+    "typer>=0.9.0"
 ]
 
 [project.optional-dependencies]
@@ -21,4 +22,4 @@ test = [
 ]
 
 [project.scripts]
-pu = "poker_utils.pu:main" 
+pu = "poker_utils.cli:app" 
