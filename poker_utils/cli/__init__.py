@@ -9,24 +9,25 @@ app = typer.Typer(
 console = Console()
 
 # Import commands after creating app to avoid circular imports
-from .mdf import mdf_cmd
-from .geo import geo_cmd
-from .rng import rng_cmd
-from .rngs import rngs_cmd
+from .mdf import mdf
+from .geo import e, e2, e3
+from .rng import rng
+from .rngs import rngs
 
 # Register commands
-app.command()(mdf_cmd)
-app.command()(geo_cmd)
-app.command()(rng_cmd)
-app.command()(rngs_cmd)
+app.command()(mdf)
+app.command()(e)
+app.command()(e2)
+app.command()(e3)
+app.command()(rng)
+app.command()(rngs)
 
 # Set default command
 @app.callback(invoke_without_command=True)
 def main(ctx: typer.Context):
     """Run default command (rngs) if no command specified."""
     if ctx.invoked_subcommand is None:
-        # Call rngs_cmd with default values
-        rngs_cmd(
+        rngs(
             min_val=1,
             max_val=100,
             interval=3.0,

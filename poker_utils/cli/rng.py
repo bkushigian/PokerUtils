@@ -4,7 +4,7 @@ from rich.console import Console
 
 console = Console()
 
-def rng_cmd(
+def rng(
     min_val: int = typer.Option(1, "--min", "-m", help="Minimum value"),
     max_val: int = typer.Option(100, "--max", "-M", help="Maximum value"),
 ) -> None:

@@ -4,7 +4,7 @@ from rich.table import Table
 
 console = Console()
 
-def mdf_cmd(
+def mdf(
     pot: float = typer.Argument(..., help="Current pot size"),
     bet: float = typer.Argument(..., help="Bet size"),
     freq: float = typer.Option(None, help="Actual defense frequency (as percentage)")

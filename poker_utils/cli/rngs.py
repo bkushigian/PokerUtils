@@ -4,6 +4,8 @@ import pyfiglet
 import typer
 from rich.console import Console
 from rich.style import Style
+from rich.live import Live
+from rich.text import Text
 
 console = Console()
 
@@ -17,7 +19,7 @@ COLORS = [
     Style(color="magenta"),
 ]
 
-def rngs_cmd(
+def rngs(
     min_val: int = typer.Option(1, "--min", "-m", help="Minimum value"),
     max_val: int = typer.Option(100, "--max", "-M", help="Maximum value"),
     interval: float = typer.Option(3.0, "--interval", "-i", help="Seconds between numbers"),
@@ -29,18 +31,16 @@ def rngs_cmd(
     try:
         num_colors = min(max(1, num_colors), len(COLORS))
         
-        while True:
-            num = randint(min_val, max_val)
-            color_idx = int(num_colors * (num - min_val) / (max_val - min_val))
-            style = COLORS[color_idx]
-            
-            fig_text = pyfiglet.figlet_format(f"{num:02}", font=font).rstrip()
-            
-            if not history:
-                console.clear()
-            
-            console.print(fig_text, style=style)
-            sleep(interval)
-            
+        with Live(auto_refresh=False, transient=not history) as live:
+            while True:
+                num = randint(min_val, max_val)
+                color_idx = int(num_colors * (num - min_val) / (max_val - min_val))
+                style = COLORS[color_idx]
+                
+                fig_text = pyfiglet.figlet_format(f"{num:02}", font=font).rstrip()
+                live.update(Text.from_ansi(fig_text, style=style))
+                live.refresh()
+                sleep(interval)
+                
     except KeyboardInterrupt:
         console.print("\nStopped by user") 
