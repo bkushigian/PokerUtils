@@ -1,182 +1,45 @@
 #!/usr/bin/env python3
 
 from argparse import ArgumentParser
-from math import sqrt
-from random import randint
-from time import sleep
-import pyfiglet
-
-
-def mdf(pot, bet):
-    return pot / (pot + bet)
-
-
-def run_mdf_command(pot, bet, freq=None):
-    if freq is not None:
-        freq = freq / 100.0
-    mdf_value = mdf(pot, bet)
-    print(f"{mdf_value * 100:.1f}")
-    if freq is not None and freq < mdf_value:
-        freq_delta = mdf_value - freq
-        mistake_size = freq_delta * pot
-        print(f"Under-defending by {freq_delta * 100:.1f}%")
-        print(f"Mistake of {mistake_size:.2f} chips")
-        return mdf_value * freq
-    return mdf_value
-
-
-def geo_upswing(p, s, b):
-    return 0.5 * (((p + 2 * s) / p) ** (1 / b) - 1)
-
-
-def run_geo_command(pot, stack, streets, verbose=False):
-    e = geo_upswing(pot, stack, streets)
-    if verbose:
-        p = pot
-        s = stack
-        print(f"Pot {p:.2f}, Stack {s:.2f}")
-        for i in range(streets):
-            b = e * p
-            p += 2 * b
-            s -= b
-            print(f"Bet {b:.2f}, Pot {p:.2f}, Stack {s:.2f}")
-    print(e, e * pot)
-
-
-def run_rng_command(min, max):
-    print(randint(min, max))
-
-
-def run_rngs_command(
-    min, max, secs, num_colors, on_mouse=False, font=None, save_history=False
-):
-    colors = [
-        "\033[97m",
-        "\033[91m",
-        "\033[93m",
-        "\033[32m",
-        "\033[96m",
-        "\033[94m",
-        "\033[95m",
-    ]
-    if num_colors > len(colors):
-        num_colors = len(colors)
-    if num_colors < 1:
-        num_colors = 1
-    c = 0
-    if font is None:
-        font = "doh"
-    if on_mouse:
-        color = colors[c]
-        print(f"\n{color}{randint(min, max)}\033[0m", end="")
-        c = (c + 1) % num_colors
-
-        def on_click(x, y, button, pressed):
-            print("Click detected")
-            if pressed:
-                color = colors[c]
-                print(f"\n{color}\033[1m{randint(min, max)}\033[0m", end="")
-                c = (c + 1) % num_colors
-            return True
-
-        try:
-            with mouse.Listener(on_click=on_click) as listener:
-                print("listening")
-                listener.join()
-        except Exception as e:
-            print(f"Error: {e}")
-    else:
-        last_num_lines = 0
-        try:
-            while True:
-                num = randint(min, max)
-                c = int(num_colors * (num - 1) / max) + 1
-                color = colors[c]
-
-                if font is None:
-                    figged = pyfiglet.figlet_format(f"{num:02}")
-                else:
-                    figged = pyfiglet.figlet_format(f"{num:02}", font=font)
-                figged = figged.rstrip().lstrip("\n")
-                if last_num_lines and not save_history:
-                    for i in range(last_num_lines):
-                        print(
-                            "\r                                                       ",
-                            end="",
-                        )
-                        print("\033[1A", end="")
-                msg = f"\n\n\n\n{color}{figged}\033[0m"
-                last_num_lines = msg.count("\n")
-
-                print(msg, end="")
-                sleep(secs)
-                c = (c + 1) % num_colors
-        except KeyboardInterrupt as e:
-            return
+from .cli.mdf import MdfCommand
+from .cli.geo import GeoCommand
+from .cli.rng import RngCommand
+from .cli.rngs import RngsCommand
 
 
 def main():
-    cli_parser = ArgumentParser()
-    sub_parsers = cli_parser.add_subparsers(dest="command", required=True)
-    mdf_parser = sub_parsers.add_parser("mdf", help="Print MDF")
-    mdf_parser.add_argument("pot", type=float)
-    mdf_parser.add_argument("bet", type=float)
-    mdf_parser.add_argument(
-        "--freq", type=float, default=None, help="Actual defence frequency"
-    )
-
-    geo2_parser = sub_parsers.add_parser("e2", help="Print 2-street geometric betsize")
-    geo2_parser.add_argument("pot", type=float)
-    geo2_parser.add_argument("stack", type=float)
-    geo2_parser.add_argument("--verbose", "-v", action="store_true")
-
-    geo3_parser = sub_parsers.add_parser("e3", help="Print 3-street geometric betsize")
-    geo3_parser.add_argument("pot", type=float)
-    geo3_parser.add_argument("stack", type=float)
-    geo3_parser.add_argument("--verbose", "-v", action="store_true")
-
-    rng_parser = sub_parsers.add_parser("rng", help="Random number generator")
-    rng_parser.add_argument("--min", "-m", type=int, default=1)
-    rng_parser.add_argument("--max", "-M", type=int, default=100)
-
-    rngs_parser = sub_parsers.add_parser("rngs", help="Random number generator")
-    rngs_parser.add_argument("--min", "-m", type=int, default=1)
-    rngs_parser.add_argument("--max", "-M", type=int, default=100)
-    rngs_parser.add_argument(
-        "--times",
-        "-t",
-        type=int,
-        default=3,
-        help="Seconds to sleep between random number",
-    )
-    rngs_parser.add_argument(
-        "--colors",
-        "-c",
-        type=int,
-        default=5,
-        help="Number of colors to use for random numbers",
-    )
-    rngs_parser.add_argument(
-        "--on_mouse", action="store_true", help="Update RNG on mouse click"
-    )
-    rngs_parser.add_argument("--font", default=None)
-
-    args = cli_parser.parse_args()
-    command = args.command
-    if command == "mdf":
-        run_mdf_command(args.pot, args.bet, args.freq)
-    elif command == "e2":
-        run_geo_command(args.pot, args.stack, 2, args.verbose)
-    elif command == "e3":
-        run_geo_command(args.pot, args.stack, 3, args.verbose)
-    elif command == "rng":
-        run_rng_command(args.min, args.max)
-    elif command == "rngs":
-        run_rngs_command(
-            args.min, args.max, args.times, args.colors, args.on_mouse, font=args.font
-        )
-    else:
-        print("Unknown command:", command)
+    commands = [MdfCommand, GeoCommand, RngCommand, RngsCommand]
+    
+    parser = ArgumentParser(description="Poker utilities command line tool")
+    subparsers = parser.add_subparsers(dest="command")
+    
+    # Register all commands
+    for command_class in commands:
+        subparser = subparsers.add_parser(command_class.name, help=command_class.help)
+        command_class.add_arguments(subparser)
+    
+    args = parser.parse_args()
+    
+    # Default to rngs if no command provided
+    if args.command is None:
+        args.command = "rngs"
+        # Set default args for rngs command
+        for action in subparsers.choices["rngs"]._actions:
+            if not hasattr(args, action.dest):
+                setattr(args, action.dest, action.default)
+    
+    # Find and execute the appropriate command
+    for command_class in commands:
+        if command_class.name == args.command:
+            result = command_class.execute(args)
+            if result.error:
+                print(f"Error: {result.error}")
+                return 1
+            print(result.message)
+            return 0
+    
+    print(f"Unknown command: {args.command}")
+    return 1
 
 
 if __name__ == "__main__":
