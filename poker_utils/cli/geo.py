@@ -47,8 +47,8 @@ def _calculate_geo(pot: float, stack: float, streets: int, verbose: bool) -> tup
     return e, table, progress
 
 def e(
-    pot: float = typer.Argument(..., help="Initial pot size"),
-    stack: float = typer.Argument(..., help="Remaining stack size"),
+    pot: float = typer.Argument(5.5, help="Initial pot size"),
+    stack: float = typer.Argument(97.5, help="Remaining stack size"),
     verbose: bool = typer.Option(False, "--verbose", "-v", help="Show detailed calculations"),
 ) -> None:
     """Calculate both 2-street and 3-street geometric betting sizes."""
@@ -65,8 +65,8 @@ def e(
         console.print(progress3)
 
 def e2(
-    pot: float = typer.Argument(..., help="Initial pot size"),
-    stack: float = typer.Argument(..., help="Remaining stack size"),
+    pot: float = typer.Argument(5.5, help="Initial pot size"),
+    stack: float = typer.Argument(97.5, help="Remaining stack size"),
     verbose: bool = typer.Option(False, "--verbose", "-v", help="Show detailed calculations"),
 ) -> None:
     """Calculate 2-street geometric betting sizes."""
@@ -76,8 +76,8 @@ def e2(
         console.print(progress)
 
 def e3(
-    pot: float = typer.Argument(..., help="Initial pot size"),
-    stack: float = typer.Argument(..., help="Remaining stack size"),
+    pot: float = typer.Argument(5.5, help="Initial pot size"),
+    stack: float = typer.Argument(97.5, help="Remaining stack size"),
     verbose: bool = typer.Option(False, "--verbose", "-v", help="Show detailed calculations"),
 ) -> None:
     """Calculate 3-street geometric betting sizes."""
